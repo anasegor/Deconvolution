@@ -68,7 +68,27 @@ namespace Zadanie1_IT
             InitializeComponent();
 
         }
-        
+        private void timer1_Tick(object sender, EventArgs e)//функция таймера
+        {
+            // создание буфера для нового кадра
+            Bitmap Image = new Bitmap(Width, Height);
+            Graphics g = Graphics.FromImage(Image);
+            // (создание фона)
+            g.FillRectangle(Brushes.White, 0, 0, Width, Height);
+            
+            // тут должна идти ваша графика
+            PainNet(graphics1, pictureBox1, pen2, x_points, N / f_d, N);
+            PainGraph(graphics1, pictureBox1, pen1, x_points, N / f_d, N);
+            DeconvSvertka(lambda);
+            PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
+            // теперь нужно скопировать кадр на канвас формы
+            var FormG = pictureBox1.CreateGraphics();
+            FormG.DrawImageUnscaled(Image, 0, 0);
+            // освобождаем задействованные в операции ресурсы
+            g.Dispose();
+            Image.Dispose();
+            FormG.Dispose();
+        }
         private void button1_Click(object sender, EventArgs e)//прямая задача
         {
             //pictureBox1.Image = null;
@@ -93,12 +113,11 @@ namespace Zadanie1_IT
         }
         private void button2_Click(object sender, EventArgs e)//обратная задача
         {
-            ReDraw(null);
+            timer1.Enabled = true;
             lambda = new double[N];//начальное приближение
             double fb= MHJ(N, ref lambda, step);
-            DeconvSvertka(lambda);
-            PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
-
+            timer1.Enabled = false;
+            
         }
 
         //гауссов купол
@@ -142,6 +161,9 @@ namespace Zadanie1_IT
             
 
         }
+
+        
+
         public void CreateXandH()
         {
             sign = new double[N];
@@ -298,9 +320,7 @@ namespace Zadanie1_IT
                     }
                     j = 0;
                     continue;
-                    TimerCallback timeCB = new TimerCallback(ReDraw);
-
-                    Timer time = new Timer(timeCB, null, 0, 1000);
+                   
                 }
                 for (i = 0; i < kk; i++)
                 {
@@ -416,37 +436,7 @@ namespace Zadanie1_IT
                data[i].Y = (data[i].Y - from_toY.X) * ky + actual_tb.Y;
            }
         }
-        public void ReDraw(object state)
-        {
-            // создание буфера для нового кадра
-            Bitmap Image = new Bitmap(Width, Height);
-            Graphics g = Graphics.FromImage(Image);//&
-
-            // (создание фона)
-            g.FillRectangle(Brushes.Red, 0, 0, Width, Height);
-
-            // рисуем эллипсы для объектов из глобального массива
-            // тут должна идти ваша графика
-
-
-
-            //foreach (var item in sig)
-            //{
-            //    float r = Math.Min(3, item.r);
-            //    g.FillEllipse(Brushes.White,
-            //      new RectangleF(item.plainX * Width, item.plainY * Height, r, r));
-            //}
-
-            // теперь нужно скопировать кадр на канвас формы
-            var FormG = pictureBox1.CreateGraphics();
-
-            FormG.DrawImageUnscaled(Image, 0, 0);
-
-            // освобождаем задействованные в операции ресурсы
-            g.Dispose();
-            Image.Dispose();
-            FormG.Dispose();
-        }
+        
 
     }
 
