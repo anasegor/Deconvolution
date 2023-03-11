@@ -68,26 +68,23 @@ namespace Zadanie1_IT
             InitializeComponent();
 
         }
-        private void timer1_Tick(object sender, EventArgs e)//функция таймера
+        private void timer1_Tick(object sender, EventArgs e)//функция таймера/двойная буферизация
         {
             // создание буфера для нового кадра
             Bitmap Image = new Bitmap(Width, Height);
-            Graphics g = Graphics.FromImage(Image);
+            Graphics gbuf = Graphics.FromImage(Image);
             // (создание фона)
-            g.FillRectangle(Brushes.White, 0, 0, Width, Height);
-            
+            gbuf.Clear(Color.White);
             // тут должна идти ваша графика
-            PainNet(graphics1, pictureBox1, pen2, x_points, N / f_d, N);
-            PainGraph(graphics1, pictureBox1, pen1, x_points, N / f_d, N);
+            PainNet(gbuf, pictureBox1, pen2, x_points, N / f_d, N);
+            PainGraph(gbuf, pictureBox1, pen1, x_points, N / f_d, N);
             DeconvSvertka(lambda);
-            PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
+            PainGraph(gbuf, pictureBox1, pen3, x_points_new, N / f_d, N);
             // теперь нужно скопировать кадр на канвас формы
-            var FormG = pictureBox1.CreateGraphics();
-            FormG.DrawImageUnscaled(Image, 0, 0);
+            graphics1.DrawImageUnscaled(Image, 0, 0);
             // освобождаем задействованные в операции ресурсы
-            g.Dispose();
+            gbuf.Dispose();
             Image.Dispose();
-            FormG.Dispose();
         }
         private void button1_Click(object sender, EventArgs e)//прямая задача
         {
@@ -114,10 +111,16 @@ namespace Zadanie1_IT
         private void button2_Click(object sender, EventArgs e)//обратная задача
         {
             timer1.Enabled = true;
-            lambda = new double[N];//начальное приближение
-            double fb= MHJ(N, ref lambda, step);
+            lambda = new double[N];
+            Random rnd = new Random();
+            for (int i = 1; i < N; i++)
+            {
+                lambda[i] = rnd.NextDouble();  // Задается начальное приближение lambda
+            }
+            //начальное приближение
+             double fb= MHJ(N, ref lambda, step);
             timer1.Enabled = false;
-            
+
         }
 
         //гауссов купол
@@ -258,7 +261,7 @@ namespace Zadanie1_IT
             double[] b = new double[kk];
             double[] y = new double[kk];
             double[] p = new double[kk];
-            h = 1;
+            
             Random rnd = new Random();
             x[0] = 1;
             for (i = 1; i < kk; i++)
