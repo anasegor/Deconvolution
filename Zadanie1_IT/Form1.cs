@@ -26,13 +26,14 @@ namespace Zadanie1_IT
         static public int actual_left = 30;
         static public int actual_top = 10;
 
-        private void pictureBox1_Resize(object sender, EventArgs e)
-        {
-            pictureBox1.Invalidate();
-        }
+        //private void pictureBox1_Resize(object sender, EventArgs e)
+        //{
+        //    pictureBox1.Invalidate();
+        //}
         private double[] sign;
         private double[] sign_new;
         private double[] sign_h;
+        private double[] sign_y;
         private double[] lambda;
         private PointF[] x_points;
         private PointF[] x_points_new;
@@ -60,7 +61,7 @@ namespace Zadanie1_IT
             for_sigma4.Text = "0,25";
             for_f_d.Text = "10";
             for_N.Text = "50";
-            for_step.Text = "100";
+            for_step.Text = "1";
 
         }
         public Form1()
@@ -110,7 +111,7 @@ namespace Zadanie1_IT
         }
         private void button2_Click(object sender, EventArgs e)//обратная задача
         {
-            timer1.Enabled = true;
+            //timer1.Enabled = true;
             lambda = new double[N];
             Random rnd = new Random();
             for (int i = 1; i < N; i++)
@@ -118,9 +119,12 @@ namespace Zadanie1_IT
                 lambda[i] = rnd.NextDouble();  // Задается начальное приближение lambda
             }
             //начальное приближение
-             double fb= MHJ(N, ref lambda, step);
+            double fb= MHJ(N, ref lambda, step);
+            DeconvSvertka(lambda);
+            PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
             timer1.Enabled = false;
-
+           // double ener = Math.Abs(Ee(sign_y) - Ee(sign)) / Ee(px) * 100;??
+           
         }
 
         //гауссов купол
@@ -195,15 +199,16 @@ namespace Zadanie1_IT
         }
         public void Svertka()//Свертка
         {
+            sign_y = new double[N];
             y_points = new PointF[N];
             for (int i = 0; i < N; i++)
             {
                 double yy = 0;
                 for (int j = 0; j < N; j++)
                 {
-                    yy += sign[j] * sign_h[Math.Abs(j - i)];
+                    sign_y[i] += sign[j] * sign_h[Math.Abs(j - i)];
                 }
-                y_points[i] = new PointF((float)(i * (1 / f_d)), (float)yy);
+                y_points[i] = new PointF((float)(i * (1 / f_d)), (float)sign_y[i]);
             }
         }
         public void DeconvSvertka(double []l)
@@ -222,8 +227,7 @@ namespace Zadanie1_IT
                 x_points_new[j] = new PointF((float)(j * (1 / f_d)), (float)sign_new[j]);
             }
         }
-      
-        
+
         public double functional(double [] x)//функционал
         {
             double[] new_x = new double[N];
@@ -256,12 +260,11 @@ namespace Zadanie1_IT
 
             // kk - количество параметров; x - массив параметров
             double TAU = 1e-6; // Точность вычислений 
-            int i, j, bs, ps;
+            int i, j, bs, ps, calc=0;
             double z,  k, fi, fb;
             double[] b = new double[kk];
             double[] y = new double[kk];
             double[] p = new double[kk];
-            
             Random rnd = new Random();
             x[0] = 1;
             for (i = 1; i < kk; i++)
@@ -280,6 +283,17 @@ namespace Zadanie1_IT
             j = 0;
             while (true)
             {
+                calc++; // Счетчик итераций. Можно игнорировать
+
+                if (calc % 100 == 0)
+                {
+                    graphics1.Clear(Color.White);
+                    // тут должна идти ваша графика
+                    PainNet(graphics1, pictureBox1, pen2, x_points, N / f_d, N);
+                    PainGraph(graphics1, pictureBox1, pen1, x_points, N / f_d, N);
+                    DeconvSvertka(x);
+                    PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
+                }
                 x[j] = y[j] + k;
                 z = functional(x);
                 if (z >= fi)
@@ -347,12 +361,22 @@ namespace Zadanie1_IT
             return fb;
 
         }
+        double Ee(double [] x)
+        {
+            double energy=0;
 
-  
+            for (int i = 0; i < x.Length; i++)
+            {
+                energy += x[i] * x[i];
+            }
+
+            return energy;
+        }
+
 
 
         //РИСОВАЛКА!!!
-         public void PainNet(Graphics gr, PictureBox pictureBox, Pen penG, PointF[] points, double toX, int n)//Отрисовка сетки с подписями
+        public void PainNet(Graphics gr, PictureBox pictureBox, Pen penG, PointF[] points, double toX, int n)//Отрисовка сетки с подписями
         {
             PointF[] copy_points = new PointF[n];
             copy_points = (PointF[])points.Clone();

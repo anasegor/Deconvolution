@@ -102,7 +102,7 @@ namespace Zadanie1_IT
             this.pictureBox1.Size = new System.Drawing.Size(563, 174);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Resize += new System.EventHandler(this.pictureBox1_Resize);
+  
             // 
             // pictureBox3
             // 
