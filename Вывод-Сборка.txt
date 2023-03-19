@@ -1,0 +1,5 @@
+﻿1>------ Сборка начата: проект: Zadanie1_IT, Конфигурация: Debug Any CPU ------
+1>C:\Users\dns\Desktop\учеба\ит 6сем\Deconvolution\Zadanie1_IT\Form1.cs(212,24,212,26): warning CS0219: Переменной "yy" присвоено значение, но оно ни разу не использовано.
+1>C:\Users\dns\Desktop\учеба\ит 6сем\Deconvolution\Zadanie1_IT\Form1.cs(22,33,22,34): warning CS0169: Поле "Form1.E" никогда не используется.
+1>  Zadanie1_IT -> C:\Users\dns\Desktop\учеба\ит 6сем\Deconvolution\Zadanie1_IT\bin\Debug\Zadanie1_IT.exe
+========== Сборка: успешно: 1, с ошибками: 0, без изменений: 0, пропущено: 0 ==========

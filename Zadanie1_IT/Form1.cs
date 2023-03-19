@@ -78,9 +78,9 @@ namespace Zadanie1_IT
             gbuf.Clear(Color.White);
             // тут должна идти ваша графика
             PainNet(gbuf, pictureBox1, pen2, x_points, N / f_d, N);
-            PainGraph(gbuf, pictureBox1, pen1, x_points, N / f_d, N);
+            PaintGraph(gbuf, pictureBox1, pen1, x_points, N / f_d, N);
             DeconvSvertka(lambda);
-            PainGraph(gbuf, pictureBox1, pen3, x_points_new, N / f_d, N);
+            PaintGraph(gbuf, pictureBox1, pen3, x_points_new, N / f_d, N);
             // теперь нужно скопировать кадр на канвас формы
             graphics1.DrawImageUnscaled(Image, 0, 0);
             // освобождаем задействованные в операции ресурсы
@@ -105,25 +105,31 @@ namespace Zadanie1_IT
             PainNet(graphics1, pictureBox1, pen2, x_points, N / f_d, N);
             PainNet(graphics2, pictureBox2, pen2, h_points, N / f_d, N);
             PainNet(graphics3, pictureBox3, pen2, y_points, N / f_d, N);
-            PainGraph(graphics1, pictureBox1, pen1, x_points, N / f_d, N);
-            PainGraph(graphics2, pictureBox2, pen1, h_points, N / f_d, N);
-            PainGraph(graphics3, pictureBox3, pen1, y_points, N / f_d, N);
+            PaintGraph(graphics1, pictureBox1, pen1, x_points, N / f_d, N);
+            PaintGraph(graphics2, pictureBox2, pen1, h_points, N / f_d, N);
+            PaintGraph(graphics3, pictureBox3, pen1, y_points, N / f_d, N);
         }
+
+        Thread th;
         private void button2_Click(object sender, EventArgs e)//обратная задача
         {
-            //timer1.Enabled = true;
+            timer1.Enabled = true;
             lambda = new double[N];
             Random rnd = new Random();
+            //начальное приближение
             for (int i = 1; i < N; i++)
             {
                 lambda[i] = rnd.NextDouble();  // Задается начальное приближение lambda
             }
-            //начальное приближение
-            double fb= MHJ(N, ref lambda, step);
-            DeconvSvertka(lambda);
-            PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
-            timer1.Enabled = false;
-           // double ener = Math.Abs(Ee(sign_y) - Ee(sign)) / Ee(px) * 100;??
+
+            th = new Thread(() => {
+                double fb = MHJ(N, ref lambda, step);
+                DeconvSvertka(lambda);
+                PaintGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
+                timer1.Enabled = false;
+            });
+            th.Start();
+            // double ener = Math.Abs(Ee(sign_y) - Ee(sign)) / Ee(px) * 100;??
            
         }
 
@@ -285,15 +291,15 @@ namespace Zadanie1_IT
             {
                 calc++; // Счетчик итераций. Можно игнорировать
 
-                if (calc % 100 == 0)
-                {
-                    graphics1.Clear(Color.White);
-                    // тут должна идти ваша графика
-                    PainNet(graphics1, pictureBox1, pen2, x_points, N / f_d, N);
-                    PainGraph(graphics1, pictureBox1, pen1, x_points, N / f_d, N);
-                    DeconvSvertka(x);
-                    PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
-                }
+                //if (calc % 100 == 0)
+                //{
+                //    graphics1.Clear(Color.White);
+                //    // тут должна идти ваша графика
+                //    PainNet(graphics1, pictureBox1, pen2, x_points, N / f_d, N);
+                //    PainGraph(graphics1, pictureBox1, pen1, x_points, N / f_d, N);
+                //    DeconvSvertka(x);
+                //    PainGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
+                //}
                 x[j] = y[j] + k;
                 z = functional(x);
                 if (z >= fi)
@@ -419,7 +425,7 @@ namespace Zadanie1_IT
             }
 
         }
-        static public void PainGraph(Graphics gr, PictureBox pictureBox, Pen penG, PointF[] points, double toX, int n)//Отрисовка графика
+        static public void PaintGraph(Graphics gr, PictureBox pictureBox, Pen penG, PointF[] points, double toX, int n)//Отрисовка графика
         {
 
              
