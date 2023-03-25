@@ -48,9 +48,9 @@ namespace Zadanie1_IT
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            for_A1.Text = "10";
-            for_A2.Text = "7";
-            for_A3.Text = "8";
+            for_A1.Text = "1";
+            for_A2.Text = "0,7";
+            for_A3.Text = "0,9";
             for_A4.Text = "1";
             for_mu1.Text = "1";
             for_mu2.Text = "3";
@@ -58,10 +58,10 @@ namespace Zadanie1_IT
             for_sigma1.Text = "0,25";
             for_sigma2.Text = "0,25";
             for_sigma3.Text = "0,25";
-            for_sigma4.Text = "0,25";
+            for_sigma4.Text = "0,1";
             for_f_d.Text = "10";
             for_N.Text = "50";
-            for_step.Text = "1";
+            for_step.Text = "0,1";
 
         }
         public Form1()
@@ -101,7 +101,14 @@ namespace Zadanie1_IT
             graphics3 = pictureBox3.CreateGraphics();
             LSistema();
             CreateXandH();
-            Svertka();
+            sign_y = new double[N];
+            y_points = new PointF[N];
+            for (int i = 0; i < N; i++)
+            {
+                for (int j = 0; j < N; j++)
+                    sign_y[i] += sign[j] * sign_h[Math.Abs(j - i)];
+                y_points[i] = new PointF((float)(i * (1 / f_d)), (float)sign_y[i]);
+            }
             PainNet(graphics1, pictureBox1, pen2, x_points, N / f_d, N);
             PainNet(graphics2, pictureBox2, pen2, h_points, N / f_d, N);
             PainNet(graphics3, pictureBox3, pen2, y_points, N / f_d, N);
@@ -113,24 +120,33 @@ namespace Zadanie1_IT
         Thread th;
         private void button2_Click(object sender, EventArgs e)//обратная задача
         {
+            //pictureBox1.Image = null;
+            //pictureBox1.Update();
             timer1.Enabled = true;
             lambda = new double[N];
             Random rnd = new Random();
             //начальное приближение
-            for (int i = 1; i < N; i++)
+            th = new Thread(() =>
             {
-                lambda[i] = rnd.NextDouble();  // Задается начальное приближение lambda
-            }
-
-            th = new Thread(() => {
                 double fb = MHJ(N, ref lambda, step);
-                DeconvSvertka(lambda);
-                PaintGraph(graphics1, pictureBox1, pen3, x_points_new, N / f_d, N);
+                Thread.Sleep(1000);
                 timer1.Enabled = false;
+                double energy = 0;
+                for (int i = 0; i < N; i++)
+                {
+                    energy += (sign[i] - sign_new[i]) * (sign[i] - sign_new[i]);
+                }
+                textBox1.Text = energy.ToString();
             });
             th.Start();
-            // double ener = Math.Abs(Ee(sign_y) - Ee(sign)) / Ee(px) * 100;??
-           
+            //DeconvSvertka(lambda);
+            //double energy = 0;
+            //for (int i = 0; i < N; i++)
+            //{
+            //    energy += (sign[i] - sign_new[i]) * (sign[i] - sign_new[i]);
+            //}
+            //textBox1.Text=energy.ToString();
+            
         }
 
         //гауссов купол
@@ -203,20 +219,6 @@ namespace Zadanie1_IT
                 h_points[i] = new PointF(i * dt, (float)sign_h[i]);
             }
         }
-        public void Svertka()//Свертка
-        {
-            sign_y = new double[N];
-            y_points = new PointF[N];
-            for (int i = 0; i < N; i++)
-            {
-                double yy = 0;
-                for (int j = 0; j < N; j++)
-                {
-                    sign_y[i] += sign[j] * sign_h[Math.Abs(j - i)];
-                }
-                y_points[i] = new PointF((float)(i * (1 / f_d)), (float)sign_y[i]);
-            }
-        }
         public void DeconvSvertka(double []l)
         {
             sign_new = new double[N];
@@ -244,7 +246,7 @@ namespace Zadanie1_IT
                 sum = 0;
                 for (int j = 0; j < N; j++)
                 {
-                    sum += sign_h[Math.Abs(j- m)] * lambda[j];
+                    sum += sign_h[Math.Abs(j - m)] * lambda[j];
                 }
                 new_x[m] = Math.Exp(-1 - sum);
             }
@@ -265,7 +267,7 @@ namespace Zadanie1_IT
         {
 
             // kk - количество параметров; x - массив параметров
-            double TAU = 1e-6; // Точность вычислений 
+            double TAU = 0.000001; // Точность вычислений 
             int i, j, bs, ps, calc=0;
             double z,  k, fi, fb;
             double[] b = new double[kk];
@@ -367,18 +369,7 @@ namespace Zadanie1_IT
             return fb;
 
         }
-        double Ee(double [] x)
-        {
-            double energy=0;
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                energy += x[i] * x[i];
-            }
-
-            return energy;
-        }
-
+        
 
 
         //РИСОВАЛКА!!!
